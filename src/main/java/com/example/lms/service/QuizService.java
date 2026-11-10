@@ -64,13 +64,15 @@ public class QuizService {
         question.setText(text);
         question.setType(type);
         Question savedQuestion = questionRepository.save(question);
+        quiz.getQuestions().add(savedQuestion);
 
         for (OptionInput input : options) {
             AnswerOption option = new AnswerOption();
             option.setQuestion(savedQuestion);
             option.setText(input.text());
             option.setCorrect(input.correct());
-            answerOptionRepository.save(option);
+            AnswerOption savedOption = answerOptionRepository.save(option);
+            savedQuestion.getOptions().add(savedOption);
         }
         log.info("Added question id={} to quiz id={}, options={}",
                 savedQuestion.getId(), quizId, options.size());

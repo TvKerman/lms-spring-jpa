@@ -96,6 +96,7 @@ public class CourseService {
         module.setTitle(title);
         module.setOrderIndex(orderIndex);
         module.setDescription(description);
+        course.getModules().add(module);
         Module saved = moduleRepository.save(module);
         log.info("Added module id={} to course id={}", saved.getId(), courseId);
         return saved;
@@ -109,6 +110,7 @@ public class CourseService {
         lesson.setTitle(title);
         lesson.setContent(content);
         lesson.setVideoUrl(videoUrl);
+        module.getLessons().add(lesson);
         Lesson saved = lessonRepository.save(lesson);
         log.info("Added lesson id={} to module id={}", saved.getId(), moduleId);
         return saved;

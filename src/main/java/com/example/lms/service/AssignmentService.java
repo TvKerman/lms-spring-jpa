@@ -40,6 +40,7 @@ public class AssignmentService {
         assignment.setDescription(description);
         assignment.setDueDate(dueDate);
         assignment.setMaxScore(maxScore);
+        lesson.getAssignments().add(assignment);
         Assignment saved = assignmentRepository.save(assignment);
         log.info("Created assignment id={} for lesson id={}", saved.getId(), lessonId);
         return saved;
