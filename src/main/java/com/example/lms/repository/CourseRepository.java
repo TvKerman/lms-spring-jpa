@@ -15,6 +15,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     List<Course> findByTitleContainingIgnoreCase(String titlePart);
 
-    @EntityGraph(attributePaths = "modules")
+    @EntityGraph(attributePaths = {"modules", "tags", "category", "teacher"})
     Optional<Course> findWithModulesById(Long id);
 }

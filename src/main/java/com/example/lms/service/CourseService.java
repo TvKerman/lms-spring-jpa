@@ -5,6 +5,7 @@ import com.example.lms.entity.Module;
 import com.example.lms.exception.DuplicateResourceException;
 import com.example.lms.exception.ResourceNotFoundException;
 import com.example.lms.repository.*;
+import com.example.lms.web.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,8 @@ public class CourseService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
+    private final CourseReviewRepository reviewRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     public Course create(String title, String description, String duration,
                          LocalDate startDate, Long categoryId, Long teacherId) {
@@ -85,7 +88,7 @@ public class CourseService {
 
     public void delete(Long id) {
         Course course = findById(id);
-        courseRepository.delete(course); // cascade ALL на modules -> lessons -> assignments
+        courseRepository.delete(course);
         log.info("Deleted course id={} (cascade to modules/lessons/assignments)", id);
     }
 
@@ -137,5 +140,45 @@ public class CourseService {
         course.getTags().remove(tag);
         log.info("Removed tag '{}' from course id={}", tagName, courseId);
         return courseRepository.save(course);
+    }
+
+    @Transactional(readOnly = true)
+    public CourseDetailResponse getCourseDetail(Long id) {
+        Course c = courseRepository.findWithModulesById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Course", id));
+        Double avg = reviewRepository.findAverageRatingByCourseId(id);
+        long count = enrollmentRepository.countByCourseId(id);
+
+        List<ModuleResponse> modules = c.getModules().stream()
+                .map(m -> new ModuleResponse(
+                        m.getId(), m.getTitle(), m.getOrderIndex(), m.getDescription(),
+                        m.getLessons().stream()
+                                .map(l -> new LessonResponse(l.getId(), l.getTitle(), l.getContent(), l.getVideoUrl()))
+                                .toList(),
+                        m.getQuiz() != null))
+                .toList();
+
+        return new CourseDetailResponse(
+                c.getId(), c.getTitle(), c.getDescription(), c.getDuration(), c.getStartDate(),
+                c.getCategory().getId(), c.getCategory().getName(),
+                c.getTeacher().getId(), c.getTeacher().getName(),
+                modules,
+                c.getTags().stream().map(Tag::getName).toList(),
+                avg, count
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<CourseResponse> listCourseSummaries(Long categoryId, Long teacherId) {
+        List<Course> courses;
+        if (categoryId != null)     courses = courseRepository.findByCategoryId(categoryId);
+        else if (teacherId != null) courses = courseRepository.findByTeacherId(teacherId);
+        else                        courses = courseRepository.findAll();
+
+        return courses.stream().map(c -> new CourseResponse(
+                c.getId(), c.getTitle(), c.getDescription(), c.getDuration(), c.getStartDate(),
+                c.getCategory().getId(), c.getCategory().getName(),
+                c.getTeacher().getId(), c.getTeacher().getName()
+        )).toList();
     }
 }

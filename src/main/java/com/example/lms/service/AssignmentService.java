@@ -84,12 +84,11 @@ public class AssignmentService {
     }
 
     public Submission grade(Long submissionId, Integer score, String feedback) {
-        Submission submission = submissionRepository.findById(submissionId)
+        Submission submission = submissionRepository.findWithDetailsById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Submission", submissionId));
         Integer max = submission.getAssignment().getMaxScore();
         if (score < 0 || score > max) {
-            throw new BusinessRuleException(
-                    "Score must be between 0 and " + max + ", got " + score);
+            throw new BusinessRuleException("Score must be between 0 and " + max + ", got " + score);
         }
         submission.setScore(score);
         submission.setFeedback(feedback);

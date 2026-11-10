@@ -1,6 +1,7 @@
 package com.example.lms.repository;
 
 import com.example.lms.entity.QuizSubmission;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -8,8 +9,10 @@ import java.util.Optional;
 
 public interface QuizSubmissionRepository extends JpaRepository<QuizSubmission, Long> {
 
+    @EntityGraph(attributePaths = {"quiz", "student"})
     List<QuizSubmission> findByStudentId(Long studentId);
 
+    @EntityGraph(attributePaths = {"quiz", "student"})
     List<QuizSubmission> findByQuizId(Long quizId);
 
     Optional<QuizSubmission> findByQuizIdAndStudentId(Long quizId, Long studentId);
