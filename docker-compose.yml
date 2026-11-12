@@ -16,5 +16,20 @@ services:
       timeout: 5s
       retries: 10
 
+  app:
+    build: .
+    container_name: lms-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/lms
+      DB_USERNAME: lms
+      DB_PASSWORD: lms
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
 volumes:
   lms_pgdata:

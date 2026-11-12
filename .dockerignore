@@ -1,0 +1,10 @@
+target/
+.idea/
+*.iml
+.git/
+.github/
+README.md
+test-api.ps1
+docker-compose.yml
+Dockerfile
+.dockerignore
